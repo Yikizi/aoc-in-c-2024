@@ -2,10 +2,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-// TODO: part 2
-// sum the list from smallest to biggest
-// the difference must be smaller than 3 * (len - 1)
-
 int comp(int a, int b) {
   if (a < b) {
     return -1;
@@ -15,65 +11,57 @@ int comp(int a, int b) {
   return 0;
 }
 
+int check(int* nums, int count, int skip) {
+    int direction = 0;
+    for (int i = 0; i < count - 1; i++) {
+        if (i == skip) continue;
+
+        int next = (i + 1 == skip) ? i + 2 : i + 1;
+        if (next >= count) break;
+
+        int current_direction = comp(nums[i], nums[next]);
+        if (current_direction == 0 || abs(nums[i] - nums[next]) > 3) return 1;
+
+        if (direction == 0) {
+            direction = current_direction;
+        } else if (direction != current_direction) {
+            return 1;
+        }
+    }
+    return 0;
+}
 
 int main() {
-
-  FILE* filep;
-  filep = fopen("day2.txt", "r");
+  FILE* filep = fopen("day2.txt", "r");
   if (filep == NULL) {
     perror("Error reading file");
     exit(1);
   }
 
-  int first = 0;
-  int last = 0;
   int result = 0;
-  char line[24];
-  char* token;
-  int i = 0;
-  int j = 0;
+  char line[256];
 
   while (fgets(line, sizeof(line), filep) != NULL) {
-    int direction = 0;
-    int state = 0;
+    int nums[20];
     int count = 0;
-    token = strtok(line, " ");
-    first = atoi(token);
-    last = atoi(token);
-    while (token != NULL && atoi(token) != 0) {
+    char* token = strtok(line, " ");
+
+    while (token != NULL && count < 20) {
+      nums[count] = atoi(token);
       count++;
-
-      int num = atoi(token);
-
-      if (direction == 0) {
-        direction = comp(num, first);
-      }
-
-      if (direction == 0) {
-        token = strtok(NULL, " ");
-        continue;
-      }
-
-      if (first < num && last < num && direction == 1) {
-        if (abs(first - num) <= 3 || abs(last - num) <= 3) {
-          state++;
-        }
-      } else if (first > num && last > num && direction == -1) {
-        if (abs(first - num) <= 3 || abs(last - num) <= 3) {
-          state++;
-        }
-      }
-      last = num;
       token = strtok(NULL, " ");
     }
-    if ((state + 1) == count) {
-      result++;
+
+    for (int i = 0; i < count; i++) {
+      int res = check(nums, count, i);
+      if (res == 0) {
+        result++;
+        break;
+      }
     }
   }
 
   printf("%d\n", result);
-
   fclose(filep);
   return 0;
-
 }
